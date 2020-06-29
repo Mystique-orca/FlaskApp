@@ -1,13 +1,15 @@
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
 
-{% extends 'base.html' %}
 
-{% block head %}
-<title>FlaskApp</title>
+{% block styles %}
+{{ super() }}
+<link rel='stylesheet' href="{{ url_for('static', filename='CSS/navbar.css') }}">
 {% endblock %}
 
 {% block body %}
 <div>
-    <h1 style="text-align: center">Update Task</h1>
+    <h1 style="text-align: center">Update Post</h1>
 
     <div align="center">
         <form action="/update/{{post.id}}" method="POST">

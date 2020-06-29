@@ -1,36 +1,68 @@
-{% extends 'base.html' %}
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
 
-{% block head %}
-
-
+{% block styles %}
+{{ super() }}
+<link rel='stylesheet' href="{{ url_for('static', filename='CSS/navbar.css') }}">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 {% endblock %}
 
-
 {% block body %}
-		<div align='center'>
-			<h1> Welcome </h1>
+		<ul>
+		  <li><a class="active" href="{{ url_for('logout') }}">Log out</a></li>
+		</ul>
+
+
+		<div align='center' class="container">
+			<h1> Welcome {{ name }}</h1>
 			<form action='/' method='post'>
-				<input placeholder='Name' name='name'>
-				<input placeholder='Post content' name='post'>
-				<input type='submit' value='submit'>
+				<input placeholder='Title' name='title'>
+				<br><br>
+				<textarea placeholder='Post content' name='post' cols="30" rows="5"}></textarea>
+				<br><br>
+				<script> $('textarea').autoResize(); </script>
+				<button class="btn btn-lg btn-primary btn-block" type="submit" value='submit' style='width:20%;'>Post</button>
 			</form>
 		</div>
-
+	
+		<div class="container">
+		<h2>All Posts </h2>
+		</div>
 		{% for post in posts %}
-			<h4>Posted by: </h4>
-			<div>{{ post.name }} {{ "      " }}</div>
-			<div>{{post.date_created.date()}}</div>
-			<br>
-			<table>
-					<tr>
-						<td>{{post.content}}</td>
-					</tr>
-					<tr>
-						<td><a href = "/update/{{ post.id }}">Update</td>
-						<td><a href = "/delete/{{ post.id }}">Delete</td>
-					</tr>
-				</table>
-			<hr>
+			<div class="container">
+				
+				<div><h3>{{ post.title }} {{ "      " }}</h3></div>
+				<div>{{post.date_created.date()}}</div>
+				<br>
+				<h4>{{post.content}}</h4>
+				<table>
+				<style>
+					td:nth-of-type(1) {
+						padding-right: 10px;
+					}
+				</style>
+						<tr>
+							<td>
+								<button id="update" class="btn btn-lg btn-primary btn-block">Update</button>
+								<script type="text/javascript">
+								    document.getElementById("update").onclick = function () {
+									location.href = "/update/{{ post.id }}";
+								    };
+								</script>
+							</td>
+
+							<td>
+								<button id="delete" class="btn btn-lg btn-primary btn-block">Delete</button>
+								<script type="text/javascript">
+								    document.getElementById("delete").onclick = function () {
+									location.href = "/delete/{{ post.id }}";
+								    };
+								</script>
+							</td>
+						</tr>
+					</table>
+				<hr>
+			</div>
 		{% endfor %}
 
 {% endblock %}
