@@ -54,9 +54,14 @@ class RegisterForm(FlaskForm):
 	email = StringField('email', validators=[InputRequired(), Email(message="Invalid Email"), Length(max=30)])
 	password = PasswordField('password', validators=[InputRequired(), Length(min=8, max=80)])
 	
-
 #endpoint specification
 @app.route('/', methods=['GET','POST'])
+def home():
+	posts = Posts.query.order_by(Posts.date_created).all()
+	return render_template('home.html', posts=posts)
+
+#endpoint specification
+@app.route('/index', methods=['GET','POST'])
 @login_required
 def index():
 	
@@ -71,7 +76,7 @@ def index():
 		try:
 			db.session.add(new_post)
 			db.session.commit()
-			return redirect('/')
+			return redirect('/index')
 		except:
 			return 'There seems to be an issue!'
 
@@ -104,8 +109,7 @@ def signup():
 		new_user = User(username = form.username.data, email = form.email.data, password = hashed_password)
 		db.session.add(new_user)
 		db.session.commit()
-		flash('You are good to go!')
-		return redirect(url_for('index'))
+		return redirect(url_for('login'))
 	return render_template('signup.html', form=form)
 
 
@@ -118,7 +122,7 @@ def delete(id):
 	try:
 		db.session.delete(post_to_delete)
 		db.session.commit()
-		return redirect('/')
+		return redirect('/index')
 	except:
 		return 'Can\'t delete the Post'
 
@@ -132,7 +136,7 @@ def update(id):
 		post_to_update.content = request.form['content']
 		try:
 			db.session.commit()
-			return redirect('/')
+			return redirect('/index')
 		except:
 			return 'Failed to Update'	
 	else:

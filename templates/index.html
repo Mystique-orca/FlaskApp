@@ -15,7 +15,7 @@
 
 		<div align='center' class="container">
 			<h1> Welcome {{ name }}</h1>
-			<form action='/' method='post'>
+			<form action="{{ url_for('index') }}" method='post'>
 				<input placeholder='Title' name='title'>
 				<br><br>
 				<textarea placeholder='Post content' name='post' cols="30" rows="5"}></textarea>
