@@ -20,16 +20,26 @@
 		<div class="container">
 		<h2><u>Posts</u> </h2>
 		</div>
-		{% for post in posts %}
+		{% if posts %}
+			{% for post in posts %}
+				<div class="container">
+				{% for user in users %}
+					{% if post.owner_id == user.id %}
+					<div><h3>{{ post.title }} {{ "      " }}</h3></div>
+					<div><h3>By <b>{{ user.username }}</b></h3></div>
+					<div>{{ post.date_created.date() }}</div>
+					<br>
+					<h4>{{ post.content }}</h4>
+					<hr>
+					{% endif %}
+				{% endfor %}
+				</div>
+			{% endfor %}
+		{% else %}
 			<div class="container">
-				
-				<div><h3>{{ post.title }} {{ "      " }}</h3></div>
-				<div>{{post.date_created.date()}}</div>
-				<br>
-				<h4>{{post.content}}</h4>
-				<hr>
+				<h2> There are no posts by the users for now.. </h2>
 			</div>
-		{% endfor %}
+		{% endif %}
 
 {% endblock %}
 		
