@@ -31,6 +31,7 @@ class Posts(db.Model):
 	title = db.Column(db.String(20), nullable = False)
 	content = db.Column(db.Text, nullable = False)
 	date_created = db.Column(db.DateTime, default=datetime.utcnow)
+	owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 class User(UserMixin, db.Model):
 	id = db.Column(db.Integer, primary_key=True)
@@ -38,6 +39,7 @@ class User(UserMixin, db.Model):
 	email = db.Column(db.String(30), nullable = False)
 	password = db.Column(db.String(80), nullable = False)
 	date_created = db.Column(db.DateTime, default=datetime.utcnow)
+	posts = db.relationship('Posts', backref='owner')
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -58,7 +60,8 @@ class RegisterForm(FlaskForm):
 @app.route('/', methods=['GET','POST'])
 def home():
 	posts = Posts.query.order_by(Posts.date_created).all()
-	return render_template('home.html', posts=posts)
+	users = User.query.with_entities(User.username, User.id)
+	return render_template('home.html', posts=posts, users=users)
 
 #endpoint specification
 @app.route('/index', methods=['GET','POST'])
@@ -71,7 +74,7 @@ def index():
 	if request.method == 'POST':
 		title = request.form['title']
 		post = request.form['post']
-		new_post = Posts(title = title, content = post)
+		new_post = Posts(title = title, content = post, owner=current_user)
 	
 		try:
 			db.session.add(new_post)
@@ -81,7 +84,7 @@ def index():
 			return 'There seems to be an issue!'
 
 	else:
-		posts = Posts.query.order_by(Posts.date_created).all()
+		posts = Posts.query.order_by(Posts.date_created).filter_by(owner_id=current_user.id).all()
 		return render_template('index.html', posts=posts, name = current_user.username)
 
 #endpoint specification
@@ -89,7 +92,7 @@ def index():
 def login():
 	form = LoginForm()
 	if form.validate_on_submit():
-		user = User.query.filter_by(username = form.username.data).first()
+		user = User.query.filter_by(username = form.username.data.lower()).first()
 		if user:
 			if check_password_hash(user.password, form.password.data):
 				login_user(user, remember=form.remember.data)
@@ -105,10 +108,17 @@ def login():
 def signup():
 	form = RegisterForm()
 	if form.validate_on_submit():
-		hashed_password = generate_password_hash(form.password.data, method='sha256')
-		new_user = User(username = form.username.data, email = form.email.data, password = hashed_password)
-		db.session.add(new_user)
-		db.session.commit()
+		user = User.query.filter_by(username = form.username.data).first()
+		email = User.query.filter_by(email = form.email.data).first()
+		if user:
+			flash('User already exists')
+		if email:
+			flash('Email already signed up by other user')
+		else:
+			hashed_password = generate_password_hash(form.password.data, method='sha256')
+			new_user = User(username = form.username.data.lower(), email = form.email.data, password = hashed_password)
+			db.session.add(new_user)
+			db.session.commit()
 		return redirect(url_for('login'))
 	return render_template('signup.html', form=form)
 
@@ -146,7 +156,7 @@ def update(id):
 @app.route('/logout')
 def logout():
 	logout_user()
-	return redirect(url_for('login'))
+	return redirect(url_for('home'))
 
 
 if __name__ == '__main__':
